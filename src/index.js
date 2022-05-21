@@ -4,6 +4,8 @@ import initWebRoutes from "./routes/web";
 import bodyParser from "body-parser";
 require("dotenv").config();
 
+'use strict';
+
 let app = express();
 
 //config body-parser to post data
