@@ -3,18 +3,12 @@
   "version": "1.0.0",
   "description": "[Messenger x NEAR] bot",
   "main": "index.js",
-<<<<<<< HEAD
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon --exec babel-node src/index.js"
-=======
 
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon --exec babel-node src/index.js",
     "dev": "parcel ./src/index.html --open",
     "dev:watch": "parcel watch ./src/index.html"
->>>>>>> d271b47... msg
   },
   "author": "Tim Thang",
   "license": "ISC",
@@ -26,15 +20,10 @@
     "dotenv": "^16.0.1",
     "ejs": "^3.1.8",
     "express": "^4.18.1",
-<<<<<<< HEAD
-    "nodemon": "^2.0.16",
-    "request": "^2.88.2"
-=======
     "near-api-js": "^0.44.2",
     "nodemon": "^2.0.16",
     "parcel-bundler": "^1.12.5",
     "request": "^2.88.2",
     "regenerator-runtime": "^0.13.9"
->>>>>>> d271b47... msg
   }
 }

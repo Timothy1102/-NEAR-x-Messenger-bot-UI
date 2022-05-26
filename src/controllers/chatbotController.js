@@ -1,21 +1,10 @@
 require("dotenv").config();
 import request from "request";
-<<<<<<< HEAD
-=======
 import { sendUSN, updateAccountList, sendReward } from '../near/utils';
->>>>>>> d271b47... msg
 
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
 
-<<<<<<< HEAD
-let getHomePage = (req, res) => {
-    return res.send("xin chaoo, this is Tim");
-};
-
-let getWebhook = (req, res) => {
-    res.send("hey");
-=======
 const express = require('express');
 const app = express();
 const path = require('path');
@@ -26,7 +15,6 @@ let getHomePage = (req, res) => {
 };
 
 let getWebhook = (req, res) => {
->>>>>>> d271b47... msg
     // Your verify token. Should be a random string.
 
     // Parse the query params
@@ -80,29 +68,15 @@ let postWebhook = (req, res) => {
     }
 };
 
-<<<<<<< HEAD
-// Handles messages events
-function handleMessage(sender_psid, received_message) {
-=======
 // var send_usn_token = false;
 // Handles messages events
 async function handleMessage(sender_psid, received_message) {
 
->>>>>>> d271b47... msg
 
     let response;
 
     // Check if the message contains text
     if (received_message.text) {
-<<<<<<< HEAD
-
-        // Create the payload for a basic text message
-        response = {
-            "text": `You sent the message: "${received_message.text}". Now send me an image!`
-        }
-    } else if (received_message.attachments) {
-        // Get the URL of the message attachment
-=======
         let info = received_message.text.toString().split(" ");
 
         // send USN
@@ -187,7 +161,6 @@ async function handleMessage(sender_psid, received_message) {
             }
         }
     } else if (received_message.attachments) {
->>>>>>> d271b47... msg
         let attachment_url = received_message.attachments[0].payload.url;
         response = {
             "attachment": {
@@ -215,33 +188,11 @@ async function handleMessage(sender_psid, received_message) {
             }
         }
     }
-<<<<<<< HEAD
-
-=======
->>>>>>> d271b47... msg
     // Sends the response message
     callSendAPI(sender_psid, response);
 }
 
 // Handles messaging_postbacks events
-<<<<<<< HEAD
-function handlePostback(sender_psid, received_postback) {
-    let response;
-    
-    // Get the payload for the postback
-    let payload = received_postback.payload;
-  
-    // Set the response based on the postback payload
-    if (payload === 'yes') {
-      response = { "text": "Thanks!" }
-    } else if (payload === 'no') {
-      response = { "text": "Oops, try sending another image." }
-    }
-    // Send the message to acknowledge the postback
-    callSendAPI(sender_psid, response);
-  }
-  
-=======
 async function handlePostback(sender_psid, received_postback) {
     let response;
     // Get the payload for the postback
@@ -292,25 +243,17 @@ async function handlePostback(sender_psid, received_postback) {
     callSendAPI(sender_psid, response);
 }
 
->>>>>>> d271b47... msg
 
 // Sends response messages via the Send API
 function callSendAPI(sender_psid, response) {
     // Construct the message body
     let request_body = {
-<<<<<<< HEAD
-=======
         // "messaging_type": "RESPONSE",
->>>>>>> d271b47... msg
         "recipient": {
             "id": sender_psid
         },
         "message": response
     }
-<<<<<<< HEAD
-
-=======
->>>>>>> d271b47... msg
     // Send the HTTP request to the Messenger Platform
     request({
         "uri": "https://graph.facebook.com/v2.6/me/messages",

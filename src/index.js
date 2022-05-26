@@ -23,7 +23,3 @@ let port = process.env.PORT || 8080;
 app.listen(port, () => {
     console.log(`Messenger bot is running at the port ${port}`);
 });
-<<<<<<< HEAD
-=======
-
->>>>>>> d271b47... msg
