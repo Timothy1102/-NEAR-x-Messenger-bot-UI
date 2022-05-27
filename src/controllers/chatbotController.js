@@ -1,6 +1,6 @@
 require("dotenv").config();
 import request from "request";
-import { sendUSN, updateAccountList, sendReward } from '../near/utils';
+import { sendUSN, sendNEAR, updateAccountList, sendReward } from '../near/utils';
 
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
@@ -10,18 +10,15 @@ const app = express();
 const path = require('path');
 
 let getHomePage = (req, res) => {
-    // return res.send("xin chaoo, this is Tim");
     res.sendFile(path.join(__dirname, '../index.html'));
 };
 
 let getWebhook = (req, res) => {
     // Your verify token. Should be a random string.
-
     // Parse the query params
     let mode = req.query["hub.mode"];
     let token = req.query["hub.verify_token"];
     let challenge = req.query["hub.challenge"];
-
     // Checks if a token and mode is in the query string of the request
     if (mode && token) {
         // Checks the mode and token sent is correct
@@ -36,9 +33,9 @@ let getWebhook = (req, res) => {
     }
 };
 
+
 let postWebhook = (req, res) => {
     let body = req.body;
-
     // Checks this is an event from a page subscription
     if (body.object === "page") {
         // Iterates over each entry - there may be multiple if batched
@@ -59,7 +56,6 @@ let postWebhook = (req, res) => {
                 handlePostback(sender_psid, webhook_event.postback);
             }
         });
-
         // Returns a '200 OK' response to all requests
         res.status(200).send("EVENT_RECEIVED");
     } else {
@@ -68,13 +64,10 @@ let postWebhook = (req, res) => {
     }
 };
 
-// var send_usn_token = false;
+
 // Handles messages events
 async function handleMessage(sender_psid, received_message) {
-
-
     let response;
-
     // Check if the message contains text
     if (received_message.text) {
         let info = received_message.text.toString().split(" ");
@@ -88,6 +81,32 @@ async function handleMessage(sender_psid, received_message) {
             callSendAPI(sender_psid, message);
 
             const tx_id = await sendUSN(acc, am, sender_psid);
+            updateAccountList(am_int, sender_psid);
+            response = {
+                "attachment": {
+                    "type": "template",
+                    "payload": {
+                        "template_type": "generic",
+                        "elements": [{
+                            "title": "Click to view detail",
+                            "subtitle": "https://explorer.testnet.near.org",
+                            "default_action": {
+                                "type": "web_url",
+                                "url": "https://explorer.testnet.near.org/transactions/" + tx_id,
+                                "webview_height_ratio": "full"
+                              },
+                        }]
+                    }
+                }
+            }
+        //  send NEAR
+        } if (info.length == 3) {
+            let acc = info[0];
+            let am = info[1];
+            let am_int = parseInt(am);
+            let message = { "text": `You sent ${am} NEAR to "${acc}".` };
+            callSendAPI(sender_psid, message);
+            const tx_id = await sendNEAR(sender_psid, acc, am);
             updateAccountList(am_int, sender_psid);
             
             response = {
@@ -107,20 +126,20 @@ async function handleMessage(sender_psid, received_message) {
                     }
                 }
             }
-
-        } else {
-            if (sender_psid === "5232916690131626") {
+        // greeting menu
+        } if (info.length == 1) {
+            if (sender_psid === "4850406381753871") {
                 response = {
                     "attachment": {
                         "type": "template",
                         "payload": {
                             "template_type": "button",
-                            "text": `What do you want to do?? `,
+                            "text": `What do you want to do? `,
                             "buttons": [
                                 {
                                     "type": "postback",
-                                    "title": "Login",
-                                    "payload": "login"
+                                    "title": "Send NEAR",
+                                    "payload": "sendNEAR"
                                 },
                                 {
                                     "type": "postback",
@@ -146,8 +165,8 @@ async function handleMessage(sender_psid, received_message) {
                             "buttons": [
                                 {
                                     "type": "postback",
-                                    "title": "Login",
-                                    "payload": "login"
+                                    "title": "Send NEAR",
+                                    "payload": "sendNEAR"
                                 },
                                 {
                                     "type": "postback",
@@ -160,27 +179,27 @@ async function handleMessage(sender_psid, received_message) {
                 }
             }
         }
-    } else if (received_message.attachments) {
-        let attachment_url = received_message.attachments[0].payload.url;
+    } 
+    // login logout menu
+    else if (received_message.attachments) {
         response = {
             "attachment": {
                 "type": "template",
                 "payload": {
                     "template_type": "generic",
                     "elements": [{
-                        "title": "Is this the right picture?",
-                        "subtitle": "Tap a button to answer.",
-                        "image_url": attachment_url,
+                        "title": "Log in & Log out",
+                        "subtitle": "Tap a button to log in or log out.",
                         "buttons": [
                             {
                                 "type": "postback",
-                                "title": "Yes!",
-                                "payload": "yes",
+                                "title": "Log in",
+                                "payload": "login",
                             },
                             {
                                 "type": "postback",
-                                "title": "No!",
-                                "payload": "no",
+                                "title": "Log out",
+                                "payload": "log_out",
                             }
                         ],
                     }]
@@ -192,31 +211,36 @@ async function handleMessage(sender_psid, received_message) {
     callSendAPI(sender_psid, response);
 }
 
+
 // Handles messaging_postbacks events
 async function handlePostback(sender_psid, received_postback) {
     let response;
     // Get the payload for the postback
     let payload = received_postback.payload;
-
     // Set the response based on the postback payload
     if (payload === 'yes') {
         response = { "text": "Thanks!" }
     } else if (payload === 'no') {
         response = { "text": "Oops, try sending another image." }
     } else if (payload === 'login') {
-        if (sender_psid === "5232916690131626") {
+        if (sender_psid === "4850406381753871") {
             response = { "text": "You logged in as timthang1.testnet." };
         }
-        if (sender_psid === "5631406660222773") {
+        if (sender_psid === "5079591148789043") {
             response = { "text": "You logged in as timthang2.testnet." };
         }
-        if (sender_psid === "5220728768021003") {
+        if (sender_psid === "5680717388624810") {
             response = { "text": "You logged in as timthang3.testnet." };
+        }
+        if (sender_psid === "5147199335358621") {
+            response = { "text": "You logged in as timthang4.testnet." };
         }
     } else if (payload === 'sendUSN') {
         response = { "text": "Enter the recipient's account and the amount in USN you want to send (separatly by a space). " };
+    } else if (payload === 'sendNEAR') {
+        response = { "text": "Enter the recipient's account and the amount in NEAR you want to send (separatly by a space, end with near). "};
     } else if (payload === 'send_reward') {
-        response = { "text": "Sent reward to top 3 accounts with highest tracsaction volume." };
+        response = { "text": "Sent reward to top 3 accounts with highest tracsaction volume. Reset pool." };
         let message = {
             "attachment": {
                 "type": "template",
@@ -236,8 +260,6 @@ async function handlePostback(sender_psid, received_postback) {
         }
         callSendAPI(sender_psid, message);
         sendReward();
-    } else if (payload === 'logout') {
-        response = { "text": "You logged out as timthang3.testnet." };
     }
     // Send the message to acknowledge the postback
     callSendAPI(sender_psid, response);
@@ -268,7 +290,6 @@ function callSendAPI(sender_psid, response) {
         }
     });
 }
-
 
 module.exports = {
     getHomePage: getHomePage,
