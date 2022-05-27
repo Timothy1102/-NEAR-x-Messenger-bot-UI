@@ -12,3 +12,5 @@ Description
 - bot's UI&UX is in src/controllers/chatbotController.js
 - bot's blockchain functions is in src/near/utils.js
 - deploy on a heroku server to automate the bot 
+
+see the bot's smart contract: https://github.com/Timothy1102/-NEAR-x-Messenger-Smart-Contract
